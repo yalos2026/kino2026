@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <!-- iOS оптимизация -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <title>YALOS STREAM — Новая реальность в кино</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* Убирает подсветку при тапе на iOS */
+        }
+
+        :root {
+            --gold: #d4af37;
+            --gold-light: #f4d47c;
+            --gold-dark: #8b7220;
+            --black: #000000;
+            --dark: #0a0a0a;
+            --darker: #050505;
+            --gray: #888;
+            --light: #e8e8e8;
+            /* Safe area для iPhone X+ */
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+            --sar: env(safe-area-inset-right);
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%; /* Запрет масштабирования текста на iOS */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--black);
+            color: var(--light);
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
+            padding-top: var(--sat); /* Отступ для safe area */
+            padding-bottom: var(--sab);
+        }
+
+        h1, h2, h3, .serif {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.02em;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            padding: 25px 6%;
+            padding-top: calc(25px + var(--sat)); /* Учитываем safe area */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.4s;
+            background: transparent;
+        }
+
+        nav.scrolled {
+            background: rgba(0, 0, 0, 0.9);
+            -webkit-backdrop-filter: blur(20px); /* iOS поддержка */
+            backdrop-filter: blur(20px);
+            padding: 15px 6%;
+            padding-top: calc(15px + var(--sat));
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .logo {
+            font-family: 'Cinzel', serif;
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: 0.4em;
+            color: var(--gold);
+            text-decoration: none;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 35px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            transition: color 0.3s;
+            position: relative;
+            touch-action: manipulation; /* Убирает задержку клика на iOS */
+        }
+
+        .nav-links a:hover {
+            color: var(--gold);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            width: 0;
+            height: 1px;
+            background: var(--gold);
+            transition: all 0.3s;
+            transform: translateX(-50%);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Language Switcher */
+        .lang-switch {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .lang-option {
+            color: var(--gray);
+            transition: color 0.3s;
+            padding: 2px 4px;
+        }
+
+        .lang-option.active {
+            color: var(--gold);
+        }
+
+        .lang-option:hover {
+            color: var(--gold-light);
+        }
+
+        /* Hero Section — iOS: используем dvh вместо vh */
+        .hero {
+            height: 100dvh; /* dynamic viewport height — работает на iOS */
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-image: url('/images/5f.jpg');
+            background-size: cover;
+            background-position: center 30%;
+            background-repeat: no-repeat;
+        }
+
+        #waveCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 100%);
+            z-index: 2;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero-subtitle {
+            font-size: 12px;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeIn 1s 0.3s forwards;
+        }
+
+        .hero h1 {
+            font-size: clamp(50px, 9vw, 130px);
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeIn 1s 0.6s forwards;
+        }
+
+        .hero h1 .accent {
+            color: var(--gold);
+            font-style: italic;
+            display: block;
+            font-size: 0.6em;
+            margin-top: 10px;
+        }
+
+        .hero-description {
+            font-size: 18px;
+            color: var(--light);
+            max-width: 600px;
+            margin: 0 auto 50px;
+            opacity: 0;
+            animation: fadeIn 1s 0.9s forwards;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: fadeIn 1s 1.2s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .btn {
+            padding: 18px 45px;
+            font-size: 12px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.4s;
+            cursor: pointer;
+            border: none;
+            display: inline-block;
+            touch-action: manipulation;
+        }
+
+        .btn-gold {
+            background: var(--gold);
+            color: var(--black);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-gold::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-gold:hover::before {
+            left: 100%;
+        }
+
+        .btn-gold:hover {
+            background: var(--gold-light);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--light);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: calc(40px + var(--sab));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            color: var(--gold);
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            opacity: 0.6;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, 10px); }
+        }
+
+        /* Section Base */
+        section {
+            padding: 140px 6%;
+            position: relative;
+        }
+
+        .section-label {
+            font-size: 11px;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-label::before {
+            content: '';
+            width: 40px;
+            height: 1px;
+            background: var(--gold);
+        }
+
+        .section-title {
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: 600;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            max-width: 900px;
+        }
+
+        .section-title .italic {
+            font-style: italic;
+            color: var(--gold);
+        }
+
+        /* White sections */
+        .bg-white {
+            background-color: #ffffff !important;
+            color: #111111;
+        }
+
+        .bg-white .section-title { color: #111111; }
+
+        .bg-white p,
+        .bg-white .about-text p,
+        .bg-white .tech-item p,
+        .bg-white .product-description {
+            color: #666666;
+        }
+
+        .bg-white .patent-card,
+        .bg-white .product-card,
+        .bg-white .tech-item,
+        .bg-white .contact-content {
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+        }
+
+        .bg-white .patent-card:hover,
+        .bg-white .product-card:hover {
+            border-color: var(--gold);
+            box-shadow: 0 20px 60px rgba(212, 175, 55, 0.15);
+        }
+
+        .bg-white .spec-row { border-bottom-color: rgba(0, 0, 0, 0.05); }
+        .bg-white .spec-row span:first-child { color: #888; }
+        .bg-white .spec-row span:last-child { color: #111; }
+
+        .bg-white .btn-outline {
+            color: #111;
+            border-color: rgba(0,0,0,0.3);
+        }
+
+        .bg-white .btn-outline:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        /* About Section */
+        .about { background: var(--darker); }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: start;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .about-text p {
+            color: var(--gray);
+            font-size: 17px;
+            margin-bottom: 20px;
+        }
+
+        .about-visual {
+            position: relative;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .speaker-ring {
+            position: absolute;
+            border: 1px solid var(--gold);
+            border-radius: 50%;
+            opacity: 0;
+            animation: ringPulse 3s infinite;
+        }
+
+        .speaker-ring:nth-child(1) { width: 150px; height: 150px; animation-delay: 0s; }
+        .speaker-ring:nth-child(2) { width: 250px; height: 250px; animation-delay: 0.5s; }
+        .speaker-ring:nth-child(3) { width: 350px; height: 350px; animation-delay: 1s; }
+        .speaker-ring:nth-child(4) { width: 450px; height: 450px; animation-delay: 1.5s; }
+
+        @keyframes ringPulse {
+            0% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 0.8; }
+            100% { opacity: 0; transform: scale(1.2); }
+        }
+
+        .speaker-core {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, var(--gold) 0%, var(--gold-dark) 100%);
+            border-radius: 50%;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 0 60px rgba(212, 175, 55, 0.6);
+        }
+
+        /* About visual wrapper */
+        .about-visual-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .about-video {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16/9;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(138, 28, 28, 0.15);
+            border: 2px solid rgba(138, 28, 28, 0.2);
+            transition: all 0.4s ease;
+            background: #000;
+        }
+
+        .about-video video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .about-visual-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 520px;
+            width: 300%;
+            height: auto;
+            z-index: 3;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            transition: all 0.4s ease;
+        }
+
+        .about-visual-image:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Cinema Layout */
+        .cinema-section {
+            background: linear-gradient(180deg, var(--darker) 0%, var(--black) 100%);
+        }
+
+        .cinema-layout {
+            max-width: 1200px;
+            margin: 80px auto 0;
+            position: relative;
+            aspect-ratio: 16/9;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .screen {
+            position: absolute;
+            top: 8%;
+            left: 10%;
+            right: 10%;
+            height: 15%;
+            background: linear-gradient(180deg, rgba(212, 175, 55, 0.3) 0%, rgba(212, 175, 55, 0.1) 100%);
+            border: 1px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            letter-spacing: 0.3em;
+            font-size: 12px;
+        }
+
+        .seat-row-container {
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 40px;
+        }
+
+        .seat-with-dot {
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.05));
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 8px 8px 4px 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .seat-with-dot:hover {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(212, 175, 55, 0.1));
+            transform: scale(1.05);
+        }
+
+        .seat-with-dot .speaker-point {
+            width: 12px;
+            height: 12px;
+            background: var(--gold);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 15px var(--gold);
+        }
+
+        .seat-with-dot .speaker-point::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 24px;
+            height: 24px;
+            border: 1px solid var(--gold);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: speakerPulse 2s infinite;
+        }
+
+        @keyframes speakerPulse {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+        }
+
+        /* Patents Section */
+        .patents {
+            background: var(--black);
+            position: relative;
+        }
+
+        .patents-grid {
+            max-width: 1200px;
+            margin: 60px auto 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+        }
+
+        .patent-card {
+            background: linear-gradient(145deg, #0a0a0a 0%, #111 100%);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 50px 40px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .patent-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(212, 175, 55, 0.1);
+        }
+
+        .patent-icon {
+            width: 60px;
+            height: 60px;
+            border: 1px solid var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            color: var(--gold);
+            font-size: 24px;
+        }
+
+        .patent-card h3 {
+            font-size: 26px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .patent-card p {
+            color: var(--gray);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .patent-card img {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            display: block;
+            margin: 20px auto 0;
+            border-radius: 12px;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+        }
+
+        /* Technology Section — карточки с картинкой слева */
+        .technology {
+            background: var(--black);
+        }
+
+        .tech-grid {
+    max-width: 1400px;
+    margin: 80px auto 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);  /* ← 2 столбца */
+    gap: 30px;
+}
+
+        .tech-item {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            padding: 40px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+            transition: all 0.4s ease;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(212, 175, 55, 0.15);
+            border-color: var(--gold);
+        }
+
+        .tech-item-number {
+            font-family: 'Cinzel', serif;
+            font-size: 48px;
+            color: var(--gold);
+            opacity: 0.3;
+            margin-right: 20px;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+
+        .tech-image {
+            flex-shrink: 0;
+            width: 280px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .tech-content {
+            flex: 1;
+        }
+
+        .tech-content h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #111;
+            font-weight: 600;
+        }
+
+        .tech-content p {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.7;
+        }
+
+        /* Products Section */
+        .products { background: var(--darker); }
+
+        .products-wrapper { max-width: 1400px; margin: 0 auto; }
+
+        .products-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 80px;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .product-card {
+            background: linear-gradient(180deg, #0a0a0a 0%, #000 100%);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 50px 40px;
+            transition: all 0.5s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-10px);
+        }
+
+        .product-number {
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            color: var(--gold);
+            letter-spacing: 0.3em;
+            margin-bottom: 40px;
+        }
+
+        .product-visual {
+            height: 180px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .speaker-icon {
+            width: 120px;
+            height: 120px;
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .speaker-icon::before {
+            content: '';
+            width: 80px;
+            height: 80px;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            border-radius: 50%;
+        }
+
+        .speaker-icon::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: var(--gold);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
+        }
+
+        .product-card h3 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .product-specs {
+            border-top: 1px solid rgba(212, 175, 55, 0.15);
+            padding-top: 25px;
+        }
+
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 13px;
+            border-bottom: 1px dashed rgba(255,255,255,0.05);
+        }
+
+        .spec-row span:first-child {
+            color: var(--gray);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        .spec-row span:last-child {
+            color: var(--light);
+            font-weight: 500;
+        }
+
+        /* Stats images */
+        .stats-images-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            max-width: 1400px;
+            margin: 60px auto 0;
+            gap: 40px;
+        }
+
+        .stats-images-row img {
+            width: calc(50% - 20px);
+            max-width: 650px;
+            height: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(138, 28, 28, 0.2);
+            border: 3px solid rgba(138, 28, 28, 0.25);
+            transition: all 0.4s ease;
+            display: block;
+        }
+
+        .stats-images-row img:hover {
+            transform: scale(1.03);
+            box-shadow: 0 25px 60px rgba(138, 28, 28, 0.3);
+        }
+
+        /* Contact Section */
+        .contact {
+            background: linear-gradient(180deg, var(--black) 0%, var(--darker) 100%);
+            text-align: center;
+        }
+
+        .contact-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .contact-content a {
+            color: #666;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .contact-content a:hover {
+            color: var(--gold);
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 6% 40px;
+            padding-bottom: calc(40px + var(--sab));
+            border-top: 1px solid rgba(212, 175, 55, 0.15);
+            background: var(--black);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .footer-logo {
+            font-family: 'Cinzel', serif;
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 0.4em;
+            color: var(--gold);
+        }
+
+        .footer-text {
+            color: var(--gray);
+            font-size: 12px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        /* Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Mobile */
+        @media (max-width: 968px) {
+            .nav-links { display: none; }
+            .about-grid { grid-template-columns: 1fr; gap: 40px; }
+            .patents-grid { grid-template-columns: 1fr; }
+            .products-grid { grid-template-columns: 1fr; }
+            .tech-grid { grid-template-columns: 1fr; }
+            section { padding: 80px 6%; }
+
+            .tech-item {
+                flex-direction: column;
+                padding: 30px;
+            }
+
+            .tech-image {
+                width: 100%;
+                height: auto;
+                max-height: 250px;
+            }
+
+            .about-visual-image {
+                max-width: 260px;
+            }
+
+            .seat-with-dot {
+                width: 40px;
+                height: 30px;
+            }
+
+            .seat-with-dot .speaker-point {
+                width: 8px;
+                height: 8px;
+            }
+
+            .seat-with-dot .speaker-point::before {
+                width: 16px;
+                height: 16px;
+            }
+
+            .stats-images-row {
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .stats-images-row img {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav id="navbar">
+        <a href="#" class="logo">STREAM</a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="#about" data-i18n="nav.about">Технология</a></li>
+                <li><a href="#cinema" data-i18n="nav.cinema">Уникальность</a></li>
+                <li><a href="#plus" data-i18n="nav.plus">Достоинства</a></li>
+                <li><a href="#patents" data-i18n="nav.patents">Патенты</a></li>
+                <li><a href="#tech" data-i18n="nav.tech">Преимущества</a></li>
+                <li><a href="#variants" data-i18n="nav.variants">Варианты</a></li>
+                <li><a href="#contact" data-i18n="nav.contact">Контакты</a></li>
+            </ul>
+            <div class="lang-switch" onclick="toggleLanguage()">
+                <span class="lang-option active" id="lang-ru">RU</span>
+                <span style="color: var(--gray);">|</span>
+                <span class="lang-option" id="lang-en">EN</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. Hero -->
+    <section class="hero">
+        <canvas id="waveCanvas"></canvas>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-subtitle" data-i18n="hero.subtitle">ООО "ЯЛОС СТРИМ" представляет</div>
+            <h1>
+                <span data-i18n="hero.title1">YALOS STREAM</span>
+                <span class="accent" data-i18n="hero.title2">новая реальность в кино</span>
+            </h1>
+            <p class="hero-description" data-i18n="hero.desc">
+                Впервые "близкие" звуки рядом с зрителями<br>
+                Иллюзия присутствия в событиях на экране<br>
+                Увеличение посещаемости кинозалов<br>
+                Новый стандарт при создании фильмов
+            </p>
+            <div class="hero-cta">
+                <a href="#products" class="btn btn-gold" data-i18n="hero.btn1">скачать презентацию</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. About -->
+    <section class="about bg-white" id="about">
+        <div class="about-grid">
+            <div class="about-text reveal">
+                <div class="section-label" data-i18n="about.label">Инновация звука</div>
+                <h2 class="section-title">
+                    <span data-i18n="about.title1">YALOS STREAM </span><br>
+                    <span class="italic" data-i18n="about.title2">это новое ощущение реальности</span>
+                </h2>
+                <p data-i18n="about.p1">
+                    Технология распределения и воспроизведения звуков в зрительных залах YALOS STREAM рассчитана на воспроизведение так называемых «близких» звуков, которые согласно сюжету фильма или другого аудиовизуального произведения происходят в непосредственном окружении зрителя.
+                    <br><br>
+                    Даже самые современные звуковые системы кинотеатров не способны реалистично передать такие звуки из-за большого расстояния между динамиком и зрителем.
+                    <br><br>
+                    Наша технология использует звуковое поле, излучаемое акустическими устройствами, вмонтированными в зрительское кресло, то есть находящееся в непосредственной близости от ушей зрителей.
+                </p>
+                <a href="#cinema" class="btn btn-outline" style="margin-top: 30px;" data-i18n="about.btn">Узнать больше</a>
+            </div>
+
+            <div class="about-visual-wrapper reveal">
+                <div class="about-video">
+    <video controls playsinline>
+        <source src="images/phc.mp4" type="video/mp4">
+    </video>
+</div>
+                <div class="about-visual">
+                    <div class="speaker-ring"></div>
+                    <div class="speaker-ring"></div>
+                    <div class="speaker-ring"></div>
+                    <div class="speaker-ring"></div>
+                    <div class="speaker-core"></div>
+                    <img src="images/b3.png" alt="YALOS STREAM технология" class="about-visual-image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Cinema Layout -->
+    <section class="cinema-section" id="cinema">
+        <div class="reveal" style="max-width: 1400px; margin: 0 auto;">
+            <div class="section-label" data-i18n="cinema.label">Уникальность</div>
+            <h2 class="section-title">
+                <span class="italic" data-i18n="cinema.title2">YALOS STREAM</span>
+            </h2>
+            <p style="color: var(--gray); max-width: 700px; font-size: 17px;" data-i18n="cinema.desc">
+                Зрительный зал представляется в виде звуковой матрицы (с одним зрительским креслом в качестве первичной ячейки), в которой формируются звуковые кластеры. Одному звуковому кластеру соответствует один звук. Кластеры состоят из любого подмножества акустических элементов, расположенных в рядом стоящих креслах. Звуковые кластеры могут быть любых размеров и перемещаться по любым направлениям в зале. Одновременно в зале может существовать любое количество звуковых кластеров. Кластеры создаются и управляются специализированным программным и аппаратным обеспечением.
+            </p>
+        </div>
+
+        <div class="cinema-layout reveal">
+            <div class="screen" data-i18n="cinema.screen">ЭКРАН</div>
+            <div class="seat-row-container" style="top: 25%;">
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+            </div>
+            <div class="seat-row-container" style="top: 40%;">
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+            </div>
+            <div class="seat-row-container" style="top: 55%;">
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+            </div>
+            <div class="seat-row-container" style="top: 70%;">
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+            </div>
+            <div class="seat-row-container" style="top: 85%;">
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+                <div class="seat-with-dot"><div class="speaker-point"></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Достоинства (белая секция с 8 карточками) -->
+    <section class="technology bg-white" id="plus">
+        <div class="reveal" style="max-width: 1400px; margin: 0 auto;">
+            <div class="section-label" data-i18n="plus.label">Плюсы</div>
+            <h2 class="section-title">
+                <span data-i18n="plus.title1">Достоинства</span>
+                <span class="italic" data-i18n="plus.title2">YALOS STREAM</span>
+            </h2>
+        </div>
+
+        <div class="tech-grid">
+            <div class="tech-item reveal">
+                <div class="tech-item-number">01</div>
+                <div class="tech-content">
+                    <h3 data-i18n="plus.t1.title">Инновационная технология</h3>
+                    <p data-i18n="plus.t1.desc">формирования близких звуков в кинозале. Ни одна звуковая система не может реалистично воспроизвести звуки, происходящие в жизни рядом с человеком на расстоянии от 15 см до 2-3 метров, это может только предлагаемая нами новая звуковая технология YALOS STREAM.</p>
+                </div>
+            </div>
+            <div class="tech-item reveal">
+                <div class="tech-item-number">02</div>
+                <div class="tech-content">
+                    <h3 data-i18n="plus.t2.title">Кресла зрителей</h3>
+                    <p data-i18n="plus.t2.desc">со встроенными звуковыми компонентами позволяют окружить посетителей «близкими» звуковыми эффектами и поднимают впечатления от просмотра на качественно новый уровень, повышая привлекательность кинотеатров в качестве места развлечений и проведения досуга населения.</p>
+                </div>
+            </div>
+            <div class="tech-item reveal">
+                <div class="tech-item-number">03</div>
+                <div class="tech-content">
+                    <h3 data-i18n="plus.t3.title">Технология YALOS STREAM</h3>
+                    <p data-i18n="plus.t3.desc">совместима с существующими звуковыми системами в зрительных залах и может устанавливаться как в новые, так и в уже функционирующие кинотеатры и концертные залы. По сути это новая «звуковая» опция расширяющая звуковой эффект от просмотра фильмов и концертов.</p>
+                </div>
+            </div>
+            <div class="tech-item reveal">
+                <div class="tech-item-number">04</div>
+                <div class="tech-content">
+                    <h3 data-i18n="plus.t4.title">Отсутствие конкурентов</h3>
+                    <p data-i18n="plus.t4.desc">и обширный потенциальный рынок делают технологию YALOS STREAM перспективной бизнес-инвестицией. Воспроизведение «близких» звуков в YALOS STREAM, а «средних» и «далеких» звуков через потолочные и настенные звуковые системы даст большее ощущение реальности в кино.</p>
+                </div>
+            </div>
+            <div class="tech-item reveal">
+                <div class="tech-item-number">05</div>
+                <div class="tech-content">
+                    <h3 data-i18n="plus.t5.title">Новый уровень</h3>
+                    <p data-i18n="plus.t5.desc">погружения в реальность при просмотре фильмов и концертов, технология создаст ощущение присутствия в месте событий, происходящих на экране, фильмы и концерты станут более посещаемыми, новая технология позволит значительно увеличить продажи билетов.</p>
+                </div>
+            </div>
+            <div class="tech-item reveal">
+                <div class="tech-item-number">06</div>
+                <div class="tech-content">
+                    <h3 data-i18n="plus.t6.title">Кластерный метод</h3>
+                    <p data-i18n="plus.t6.desc">формирования и перемещения звуковых сцен. Еще никогда близкие звуки в фильмах не были такими реалистичными, как с нашей технологией. Их перемещение вокруг зрителя создает полную иллюзию нахождения на месте событий, происходящих на экране.</p>
+                </div>
+            </div>
+            <div class="tech-item reveal">
+                <div class="tech-item-number">07</div>
+                <div class="tech-content">
+                    <h3 data-i18n="plus.t7.title">Можно создать</h3>
+                    <p data-i18n="plus.t7.desc">любое количество звуковых кластеров для озвучивания фильмов и концертов, может перемещать звуковые кластеры в любых направлениях, звуковые кластеры могут быть любых размеров, позволяя передавать зрителю не только точечные, но и длинные волновые звуки.</p>
+                </div>
+            </div>
+            <div class="tech-item reveal">
+                <div class="tech-item-number">08</div>
+                <div class="tech-content">
+                    <h3 data-i18n="plus.t8.title">Позволяет независимо</h3>
+                    <p data-i18n="plus.t8.desc">создавать любые звуковые сценарии как для новых, так и для старых кинофильмов. Более того можно создать разные звуковые сценарии для одного и того же фильма, зрителей может привлечь один и тот же фильм, но с разными сценариями звукового оформления.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-images-row">
+            <img src="images/st3.png" alt="YALOS STREAM технология">
+            <img src="images/st7.png" alt="YALOS STREAM технология">
+        </div>
+    </section>
+
+    <!-- 5. Patents -->
+    <section class="patents" id="patents">
+        <div class="reveal" style="max-width: 1400px; margin: 0 auto; text-align: center;">
+            <div class="section-label" style="justify-content: center;" data-i18n="patents.label">Интеллектуальная собственность</div>
+            <h2 class="section-title" style="margin: 0 auto;" data-i18n="patents.title">
+                Защищенные <span class="italic">инновации</span>
+            </h2>
+        </div>
+
+        <div class="patents-grid">
+            <div class="patent-card reveal">
+                <div class="patent-icon">⚖️</div>
+                <h3 data-i18n="patents.p1.title">Патент в США</h3>
+                <p data-i18n="patents.p1.desc">В США на нашу технологию управления звуком в феврале 2017 года получен патент № 9,584,936 "METHOD FOR CONTROLLING SOUND IN AN AUDITORIUM"</p>
+                <img src="images/patent_am.jpg" alt="Патент США">
+            </div>
+            <div class="patent-card reveal">
+                <div class="patent-icon">⚡</div>
+                <h3 data-i18n="patents.p2.title">Патенты в России</h3>
+                <p data-i18n="patents.p2.desc">В России: 14 марта 2017 года на технологию управления звуком выдан патент RU2612997, также Патент RU 2759666 «Система воспроизведения аудио-видеоданных» от 19.02.2021 г. и свидетельство о государственной регистрации программы для ЭВМ №2024610755 от 15.01.2024 г.</p>
+                <img src="images/patent_ros.jpg" alt="Патент России">
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Преимущества (белая секция с картинками) -->
+    <section class="technology bg-white" id="tech">
+        <div class="reveal" style="max-width: 1400px; margin: 0 auto;">
+            <div class="section-label" data-i18n="adv.label">Вне конкуренции</div>
+            <h2 class="section-title">
+                <span data-i18n="adv.title1">Преимущества</span>
+                <span class="italic" data-i18n="adv.title2">YALOS STREAM</span>
+            </h2>
+        </div>
+
+        <div class="tech-grid">
+            <div class="tech-item reveal">
+                <img src="images/b6.png" alt="YALOS STREAM технология" class="tech-image">
+                <div class="tech-content">
+                    <h3 data-i18n="adv.t1.title">Кресло и звуковое поле</h3>
+                    <p data-i18n="adv.t1.desc">Каждое кресло зала оборудуется комплексом акустического оборудования – не менее 4-6 динамиков и сабвуферов, имеющих разные частотные характеристики. Звуковое поле кресла настроено на оптимальный режим громкости и объемности передачи «близких» звуков.</p>
+                </div>
+            </div>
+            <div class="tech-item reveal">
+                <img src="images/img2.jpg" alt="YALOS STREAM технология" class="tech-image">
+                <div class="tech-content">
+                    <h3 data-i18n="adv.t2.title">Зал - это звуковая матрица</h3>
+                    <p data-i18n="adv.t2.desc">Все кресла зала превращаются в сотовое матричное звуковое поле, где первичной ячейкой-сотой является 1 кресло. Например, если в зале 900 кресел, значит сотовое поле состоит из 900 ячеек. В пределах матрицы зала можно создавать бесконечное количество звуковых кластеров.</p>
+                </div>
+            </div>
+            <div class="tech-item reveal">
+                <img src="images/img3.jpg" alt="YALOS STREAM технология" class="tech-image">
+                <div class="tech-content">
+                    <h3 data-i18n="adv.t3.title">Звуковые кластеры</h3>
+                    <p data-i18n="adv.t3.desc">Звуки в сотовом поле формируются в виде звуковых кластеров. Кластер создается излучением любого количества акустического оборудования, размещенного на соседних креслах, звуковой кластер может быть любого размера и формы.</p>
+                </div>
+            </div>
+            <div class="tech-item reveal">
+                <img src="images/img4.jpg" alt="YALOS STREAM технология" class="tech-image">
+                <div class="tech-content">
+                    <h3 data-i18n="adv.t4.title">Движение кластеров</h3>
+                    <p data-i18n="adv.t4.desc">Звуковые кластеры перемещаются по зрительному залу в любых направлениях, которые определяются характером звука и действием на экране кинотеатра. Звуковых кластеров в зале может быть любое количество - это зависит от сценария, созданного звукорежиссером.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Products / Variants -->
+    <section class="products" id="variants">
+        <div class="products-wrapper">
+            <div class="products-header reveal">
+                <div>
+                    <div class="section-label" data-i18n="products.label">Линейка продуктов</div>
+                    <h2 class="section-title">
+                        <span data-i18n="products.title1">Варианты комплектации</span>
+                        <span class="italic" data-i18n="products.title2">залов по технологии YALOS STREAM</span>
+                    </h2>
+                </div>
+            </div>
+
+            <div class="products-grid">
+                <div class="product-card reveal">
+                    <div class="product-number">— 01</div>
+                    <div class="product-visual"><div class="speaker-icon"></div></div>
+                    <h3 data-i18n="products.standard">STREAM Стандарт</h3>
+                    <div class="product-specs">
+                        <div class="spec-row"><span data-i18n="specs.s1">Комплект акустики для кресла</span></div>
+                        <div class="spec-row"><span data-i18n="specs.s2">Коммутационное оборудование</span></div>
+                        <div class="spec-row"><span data-i18n="specs.s3">Звуковой Сервер</span></div>
+                        <div class="spec-row"><span data-i18n="specs.s4">Программа звукового монтажа</span></div>
+                        <div class="spec-row"><span data-i18n="specs.s5">Блок управления</span></div>
+                    </div>
+                </div>
+                <div class="product-card reveal">
+                    <div class="product-number">— 02</div>
+                    <div class="product-visual"><div class="speaker-icon"></div></div>
+                    <h3 data-i18n="products.premium">STREAM Премиум</h3>
+                    <div class="product-specs">
+                        <div class="spec-row"><span data-i18n="specs.p1">Кресла с акустикой</span></div>
+                        <div class="spec-row"><span data-i18n="specs.s2">Коммутационное оборудование</span></div>
+                        <div class="spec-row"><span data-i18n="specs.s3">Звуковой Сервер</span></div>
+                        <div class="spec-row"><span data-i18n="specs.s4">Программа звукового монтажа</span></div>
+                        <div class="spec-row"><span data-i18n="specs.s5">Блок управления</span></div>
+                    </div>
+                </div>
+                <div class="product-card reveal">
+                    <div class="product-number">— 03</div>
+                    <div class="product-visual"><div class="speaker-icon"></div></div>
+                    <h3 data-i18n="products.lux">STREAM Люкс</h3>
+                    <div class="product-specs">
+                        <div class="spec-row"><span data-i18n="specs.l1">VIP-кресла – с Hi-Fi-акустикой</span></div>
+                        <div class="spec-row"><span data-i18n="specs.s2">Коммутационное оборудование</span></div>
+                        <div class="spec-row"><span data-i18n="specs.s3">Звуковой Сервер</span></div>
+                        <div class="spec-row"><span data-i18n="specs.s4">Программа звукового монтажа</span></div>
+                        <div class="spec-row"><span data-i18n="specs.s5">Блок управления</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. Contact -->
+    <section class="contact bg-white" id="contact">
+        <div class="contact-content reveal">
+            <h2 class="section-title" style="margin: 0 auto 20px;">
+                <span data-i18n="contact.title1">Связаться с нами</span><br>
+                <span class="italic" data-i18n="contact.title2">ООО "ЯЛОС СТРИМ"</span>
+            </h2>
+            <img src="images/logo.png" alt="YALOS STREAM" style="max-width: 35%; height: auto; border-radius: 15px; margin: 20px auto; display: block;">
+            <p style="color: #666; font-size: 17px;" data-i18n="contact.desc">
+                <br>
+                <a href="tel:+74951180980">Телефон: +7 (495) 118-09-80</a><br>
+                <a href="mailto:info@yalos-project.com">info@yalos-project.com</a><br>
+                <span data-i18n="contact.address">Российская Федерация, г. Москва, ул.Плющиха 9, строение 2</span>
+            </p>
+        </div>
+    </section>
+
+    <!-- 9. Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">STREAM</div>
+            <div class="footer-text" data-i18n="footer.text">© 2026 YALOS STREAM · Все права защищены</div>
+        </div>
+    </footer>
+
+    <script>
+        // Словарь переводов — полностью соответствует HTML
+        const translations = {
+            ru: {
+                'nav.about': 'Технология',
+                'nav.cinema': 'Уникальность',
+                'nav.plus': 'Достоинства',
+                'nav.patents': 'Патенты',
+                'nav.tech': 'Преимущества',
+                'nav.variants': 'Варианты',
+                'nav.contact': 'Контакты',
+
+                'hero.subtitle': 'ООО "ЯЛОС СТРИМ" представляет',
+                'hero.title1': 'YALOS STREAM',
+                'hero.title2': 'новая реальность в кино',
+                'hero.desc': 'Впервые "близкие" звуки рядом с зрителями<br>Иллюзия присутствия в событиях на экране<br>Увеличение посещаемости кинозалов<br>Новый стандарт при создании фильмов',
+                'hero.btn1': 'скачать презентацию',
+
+                'about.label': 'Инновация звука',
+                'about.title1': 'YALOS STREAM ',
+                'about.title2': 'это новое ощущение реальности',
+                'about.p1': 'Технология распределения и воспроизведения звуков в зрительных залах YALOS STREAM рассчитана на воспроизведение так называемых «близких» звуков, которые согласно сюжету фильма или другого аудиовизуального произведения происходят в непосредственном окружении зрителя.<br><br>Даже самые современные звуковые системы кинотеатров не способны реалистично передать такие звуки из-за большого расстояния между динамиком и зрителем.<br><br>Наша технология использует звуковое поле, излучаемое акустическими устройствами, вмонтированными в зрительское кресло, то есть находящееся в непосредственной близости от ушей зрителей.',
+                'about.btn': 'Узнать больше',
+
+                'cinema.label': 'Уникальность',
+                'cinema.title2': 'YALOS STREAM',
+                'cinema.desc': 'Зрительный зал представляется в виде звуковой матрицы (с одним зрительским креслом в качестве первичной ячейки), в которой формируются звуковые кластеры. Одному звуковому кластеру соответствует один звук. Кластеры состоят из любого подмножества акустических элементов, расположенных в рядом стоящих креслах. Звуковые кластеры могут быть любых размеров и перемещаться по любым направлениям в зале. Одновременно в зале может существовать любое количество звуковых кластеров. Кластеры создаются и управляются специализированным программным и аппаратным обеспечением.',
+                'cinema.screen': 'ЭКРАН',
+
+                'plus.label': 'Плюсы',
+                'plus.title1': 'Достоинства',
+                'plus.title2': 'YALOS STREAM',
+                'plus.t1.title': 'Инновационная технология',
+                'plus.t1.desc': 'формирования близких звуков в кинозале. Ни одна звуковая система не может реалистично воспроизвести звуки, происходящие в жизни рядом с человеком на расстоянии от 15 см до 2-3 метров, это может только предлагаемая нами новая звуковая технология YALOS STREAM.',
+                'plus.t2.title': 'Кресла зрителей',
+                'plus.t2.desc': 'со встроенными звуковыми компонентами позволяют окружить посетителей «близкими» звуковыми эффектами и поднимают впечатления от просмотра на качественно новый уровень, повышая привлекательность кинотеатров в качестве места развлечений и проведения досуга населения.',
+                'plus.t3.title': 'Технология YALOS STREAM',
+                'plus.t3.desc': 'совместима с существующими звуковыми системами в зрительных залах и может устанавливаться как в новые, так и в уже функционирующие кинотеатры и концертные залы. По сути это новая «звуковая» опция расширяющая звуковой эффект от просмотра фильмов и концертов.',
+                'plus.t4.title': 'Отсутствие конкурентов',
+                'plus.t4.desc': 'и обширный потенциальный рынок делают технологию YALOS STREAM перспективной бизнес-инвестицией. Воспроизведение «близких» звуков в YALOS STREAM, а «средних» и «далеких» звуков через потолочные и настенные звуковые системы даст большее ощущение реальности в кино.',
+                'plus.t5.title': 'Новый уровень',
+                'plus.t5.desc': 'погружения в реальность при просмотре фильмов и концертов, технология создаст ощущение присутствия в месте событий, происходящих на экране, фильмы и концерты станут более посещаемыми, новая технология позволит значительно увеличить продажи билетов.',
+                'plus.t6.title': 'Кластерный метод',
+                'plus.t6.desc': 'формирования и перемещения звуковых сцен. Еще никогда близкие звуки в фильмах не были такими реалистичными, как с нашей технологией. Их перемещение вокруг зрителя создает полную иллюзию нахождения на месте событий, происходящих на экране.',
+                'plus.t7.title': 'Можно создать',
+                'plus.t7.desc': 'любое количество звуковых кластеров для озвучивания фильмов и концертов, может перемещать звуковые кластеры в любых направлениях, звуковые кластеры могут быть любых размеров, позволяя передавать зрителю не только точечные, но и длинные волновые звуки.',
+                'plus.t8.title': 'Позволяет независимо',
+                'plus.t8.desc': 'создавать любые звуковые сценарии как для новых, так и для старых кинофильмов. Более того можно создать разные звуковые сценарии для одного и того же фильма, зрителей может привлечь один и тот же фильм, но с разными сценариями звукового оформления.',
+
+                'patents.label': 'Интеллектуальная собственность',
+                'patents.title': 'Защищенные инновации',
+                'patents.p1.title': 'Патент в США',
+                'patents.p1.desc': 'В США на нашу технологию управления звуком в феврале 2017 года получен патент № 9,584,936 "METHOD FOR CONTROLLING SOUND IN AN AUDITORIUM"',
+                'patents.p2.title': 'Патенты в России',
+                'patents.p2.desc': 'В России: 14 марта 2017 года на технологию управления звуком выдан патент RU2612997, также Патент RU 2759666 «Система воспроизведения аудио-видеоданных» от 19.02.2021 г. и свидетельство о государственной регистрации программы для ЭВМ №2024610755 от 15.01.2024 г.',
+
+                'adv.label': 'Вне конкуренции',
+                'adv.title1': 'Преимущества',
+                'adv.title2': 'YALOS STREAM',
+                'adv.t1.title': 'Кресло и звуковое поле',
+                'adv.t1.desc': 'Каждое кресло зала оборудуется комплексом акустического оборудования – не менее 4-6 динамиков и сабвуферов, имеющих разные частотные характеристики. Звуковое поле кресла настроено на оптимальный режим громкости и объемности передачи «близких» звуков.',
+                'adv.t2.title': 'Зал - это звуковая матрица',
+                'adv.t2.desc': 'Все кресла зала превращаются в сотовое матричное звуковое поле, где первичной ячейкой-сотой является 1 кресло. Например, если в зале 900 кресел, значит сотовое поле состоит из 900 ячеек. В пределах матрицы зала можно создавать бесконечное количество звуковых кластеров.',
+                'adv.t3.title': 'Звуковые кластеры',
+                'adv.t3.desc': 'Звуки в сотовом поле формируются в виде звуковых кластеров. Кластер создается излучением любого количества акустического оборудования, размещенного на соседних креслах, звуковой кластер может быть любого размера и формы.',
+                'adv.t4.title': 'Движение кластеров',
+                'adv.t4.desc': 'Звуковые кластеры перемещаются по зрительному залу в любых направлениях, которые определяются характером звука и действием на экране кинотеатра. Звуковых кластеров в зале может быть любое количество - это зависит от сценария, созданного звукорежиссером.',
+
+                'products.label': 'Линейка продуктов',
+                'products.title1': 'Варианты комплектации',
+                'products.title2': 'залов по технологии YALOS STREAM',
+                'products.standard': 'STREAM Стандарт',
+                'products.premium': 'STREAM Премиум',
+                'products.lux': 'STREAM Люкс',
+                'specs.s1': 'Комплект акустики для кресла',
+                'specs.s2': 'Коммутационное оборудование',
+                'specs.s3': 'Звуковой Сервер',
+                'specs.s4': 'Программа звукового монтажа',
+                'specs.s5': 'Блок управления',
+                'specs.p1': 'Кресла с акустикой',
+                'specs.l1': 'VIP-кресла – с Hi-Fi-акустикой',
+
+                'contact.title1': 'Связаться с нами',
+                'contact.title2': 'ООО "ЯЛОС СТРИМ"',
+                'contact.desc': '',
+                'contact.address': 'Российская Федерация, г. Москва, ул.Плющиха 9, строение 2',
+
+                'footer.text': '© 2026 YALOS STREAM · Все права защищены'
+            },
+            en: {
+                'nav.about': 'Technology',
+                'nav.cinema': 'Uniqueness',
+                'nav.plus': 'Advantages',
+                'nav.patents': 'Patents',
+                'nav.tech': 'Benefits',
+                'nav.variants': 'Variants',
+                'nav.contact': 'Contacts',
+
+                'hero.subtitle': 'LLC "YALOS STREAM" presents',
+                'hero.title1': 'YALOS STREAM',
+                'hero.title2': 'a new reality in cinema',
+                'hero.desc': 'For the first time, "close" sounds next to the viewers<br>Illusion of presence in on-screen events<br>Increased cinema attendance<br>A new standard in filmmaking',
+                'hero.btn1': 'download presentation',
+
+                'about.label': 'Sound Innovation',
+                'about.title1': 'YALOS STREAM ',
+                'about.title2': 'a new sensation of reality',
+                'about.p1': 'The technology of sound distribution and reproduction in auditoriums YALOS STREAM is designed to reproduce so-called "close" sounds that, according to the plot of a film or other audiovisual work, occur in the immediate vicinity of the viewer.<br><br>Even the most modern cinema sound systems are unable to realistically reproduce such sounds due to the large distance between the speaker and the viewer.<br><br>Our technology uses the sound field emitted by acoustic devices built into the cinema seat, that is, located in the immediate vicinity of the viewers\' ears.',
+                'about.btn': 'Learn More',
+
+                'cinema.label': 'Uniqueness',
+                'cinema.title2': 'YALOS STREAM',
+                'cinema.desc': 'The auditorium is represented as a sound matrix (with one seat as the primary cell), in which sound clusters are formed. One sound cluster corresponds to one sound. Clusters consist of any subset of acoustic elements located in adjacent seats. Sound clusters can be of any size and move in any direction in the hall. Any number of sound clusters can exist in the hall at the same time. Clusters are created and controlled by specialized software and hardware.',
+                'cinema.screen': 'SCREEN',
+
+                'plus.label': 'Pros',
+                'plus.title1': 'Advantages',
+                'plus.title2': 'YALOS STREAM',
+                'plus.t1.title': 'Innovative Technology',
+                'plus.t1.desc': 'for forming close sounds in a cinema hall. No sound system can realistically reproduce sounds that occur in real life next to a person at a distance of 15 cm to 2-3 meters — only our new YALOS STREAM sound technology can do this.',
+                'plus.t2.title': 'Audience Seats',
+                'plus.t2.desc': 'with built-in sound components allow you to surround visitors with "close" sound effects and elevate the viewing experience to a qualitatively new level, increasing the attractiveness of cinemas as a place of entertainment and leisure.',
+                'plus.t3.title': 'YALOS STREAM Technology',
+                'plus.t3.desc': 'is compatible with existing sound systems in auditoriums and can be installed in both new and already operating cinemas and concert halls. Essentially, this is a new "sound" option that expands the sound effect of watching films and concerts.',
+                'plus.t4.title': 'No Competitors',
+                'plus.t4.desc': 'and a vast potential market make the YALOS STREAM technology a promising business investment. Reproducing "close" sounds in YALOS STREAM, and "medium" and "distant" sounds through ceiling and wall sound systems will give a greater sense of reality in cinema.',
+                'plus.t5.title': 'New Level',
+                'plus.t5.desc': 'of immersion in reality when watching films and concerts, the technology will create a sense of presence at the location of events happening on the screen, films and concerts will become more popular, the new technology will significantly increase ticket sales.',
+                'plus.t6.title': 'Cluster Method',
+                'plus.t6.desc': 'of forming and moving sound scenes. Close sounds in films have never been as realistic as with our technology. Their movement around the viewer creates a complete illusion of being at the location of events happening on the screen.',
+                'plus.t7.title': 'Can Create',
+                'plus.t7.desc': 'any number of sound clusters for soundtracks of films and concerts, can move sound clusters in any direction, sound clusters can be of any size, allowing to transmit not only point but also long wave sounds to the viewer.',
+                'plus.t8.title': 'Allows Independently',
+                'plus.t8.desc': 'to create any sound scenarios for both new and old films. Moreover, you can create different sound scenarios for the same film — viewers can be attracted by the same film but with different sound design scenarios.',
+
+                'patents.label': 'Intellectual Property',
+                'patents.title': 'Protected Innovations',
+                'patents.p1.title': 'US Patent',
+                'patents.p1.desc': 'In the USA, in February 2017, patent No. 9,584,936 "METHOD FOR CONTROLLING SOUND IN AN AUDITORIUM" was obtained for our sound control technology.',
+                'patents.p2.title': 'Russian Patents',
+                'patents.p2.desc': 'In Russia: on March 14, 2017, patent RU2612997 was issued for the sound control technology, also Patent RU 2759666 "Audio-Video Data Reproduction System" dated 19.02.2021, and certificate of state registration of computer program No. 2024610755 dated 15.01.2024.',
+
+                'adv.label': 'Beyond Competition',
+                'adv.title1': 'Benefits',
+                'adv.title2': 'YALOS STREAM',
+                'adv.t1.title': 'Seat and Sound Field',
+                'adv.t1.desc': 'Each seat in the hall is equipped with a set of acoustic equipment — at least 4-6 speakers and subwoofers with different frequency characteristics (high, medium and low frequencies). The sound field of the seat is tuned to the optimal volume and fullness mode for transmitting "close" sounds.',
+                'adv.t2.title': 'The Hall is a Sound Matrix',
+                'adv.t2.desc': 'All seats in the hall turn into a cellular matrix sound field, where the primary cell is 1 seat. For example, if there are 900 seats in the hall, the cellular field consists of 900 cells. Within the hall matrix, you can create an infinite number of sound clusters and move them in any direction.',
+                'adv.t3.title': 'Sound Clusters',
+                'adv.t3.desc': 'Sounds in the cellular field are formed as sound clusters. A cluster is created by the radiation of any number of acoustic equipment placed on adjacent seats; a sound cluster can be of any size and shape. The size and shape of the sound cluster depend on the nature of the sound it emits into the hall space.',
+                'adv.t4.title': 'Cluster Movement',
+                'adv.t4.desc': 'Sound clusters move around the auditorium (cellular matrix sound field) in any direction determined by the nature of the sound and the action on the cinema screen. There can be any number of sound clusters in the hall — it depends on the scenario created by the sound engineer.',
+
+                'products.label': 'Product Line',
+                'products.title1': 'Configuration Options',
+                'products.title2': 'for halls with YALOS STREAM technology',
+                'products.standard': 'STREAM Standard',
+                'products.premium': 'STREAM Premium',
+                'products.lux': 'STREAM Lux',
+                'specs.s1': 'Acoustic kit for seat',
+                'specs.s2': 'Switching equipment',
+                'specs.s3': 'Sound Server',
+                'specs.s4': 'Sound editing software',
+                'specs.s5': 'Control unit',
+                'specs.p1': 'Seats with acoustics',
+                'specs.l1': 'VIP seats – with Hi-Fi acoustics',
+
+                'contact.title1': 'Contact Us',
+                'contact.title2': 'LLC "YALOS STREAM"',
+                'contact.desc': '',
+                'contact.address': 'Russian Federation, Moscow, Plyushchikha St. 9, building 2',
+
+                'footer.text': '© 2026 YALOS STREAM · All rights reserved'
+            }
+        };
+
+        let currentLang = 'ru';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ru' ? 'en' : 'ru';
+            document.documentElement.lang = currentLang;
+
+            document.getElementById('lang-ru').classList.toggle('active', currentLang === 'ru');
+            document.getElementById('lang-en').classList.toggle('active', currentLang === 'en');
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[currentLang][key]) {
+                    // Используем innerHTML для поддержки <br> в текстах
+                    el.innerHTML = translations[currentLang][key];
+                }
+            });
+
+            // Сохраняем выбор языка
+            localStorage.setItem('lang', currentLang);
+        }
+
+        // Восстанавливаем язык при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('lang');
+            if (savedLang && savedLang !== 'ru') {
+                currentLang = savedLang;
+                toggleLanguage();
+            }
+        });
+
+        // Wave Canvas Animation
+        const canvas = document.getElementById('waveCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        let time = 0;
+        let animationId;
+        function drawWaves() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(212, 175, 55, 0.9)';
+
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(212, 175, 55, ${0.6 - i * 0.1})`;
+                ctx.lineWidth = 3;
+
+                const amplitude = 50 + i * 20;
+                const frequency = 0.005 - i * 0.0005;
+                const speed = 0.02 + i * 0.005;
+                const yOffset = canvas.height / 2 + (i - 2) * 40;
+
+                for (let x = 0; x <= canvas.width; x += 2) {
+                    const y = yOffset + Math.sin(x * frequency + time * speed) * amplitude
+                              + Math.sin(x * frequency * 2 + time * speed * 1.5) * (amplitude * 0.3);
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            time += 1;
+            animationId = requestAnimationFrame(drawWaves);
+        }
+        drawWaves();
+
+        // Останавливаем анимацию когда страница не видна (экономия батареи iOS)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                cancelAnimationFrame(animationId);
+            } else {
+                drawWaves();
+            }
+        });
+
+        // Navbar scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) navbar.classList.add('scrolled');
+            else navbar.classList.remove('scrolled');
+        }, { passive: true }); // passive: true — оптимизация для iOS
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Reveal on scroll
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.15 });
+
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+    </script>
+</body>
+</html>
